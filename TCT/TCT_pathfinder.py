@@ -344,7 +344,7 @@ def format_pathfinder_query(node1_id, node1_category, node2_id, node2_category):
                     }
                 },
                 "paths": {
-                    "p0": {
+                    "qpath": {
                         "subject": "SN",
                         "object": "ON"
                     }
