@@ -45,7 +45,7 @@ Example notebook for **[NetworkFinder](https://github.com/NCATSTranslator/Transl
 
 #### Connecting to a user's API
 API should be developed following the standard from [TRAPI](https://github.com/NCATSTranslator/ReasonerAPI). <br>
-An example notebook for add a user's API can be found [here](https://github.com/gloriachin/Translator_component_toolkit/tree/main/notebooks/Connecting_userAPI.ipynb).<br>
+An example notebook for add a user's API can be found [here](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Connecting_userAPI.ipynb).<br>
 **Warning: It does not work if no user' API is established**<br>
 
 ## Key Translator components
