@@ -15,9 +15,9 @@ Faciliting to explore knowledge graphs from both Translator ecosystem and user d
 Connecting large language models to convert user's questions into TRAPI queries. <br>
 
 Key functions including: <br>
-    Find the identifier given a name using name resolver
-    Annotate a node using node annotator
-    Explore knowledge graphs in Translator
+    Find the identifier given a name using name resolver<br>
+    Annotate a node using node annotator<br>
+    Explore knowledge graphs in Translator<br>
     Find neighbors in the Translator KGs for a given node <br>
     Find paths between node A and node B in the Translator KG <br>
     Find a subnetwork given a list of nodes in the Translator KG <br>
