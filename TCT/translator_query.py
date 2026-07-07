@@ -43,6 +43,95 @@ def get_translator_API_predicates() -> tuple[dict, pandas.DataFrame, dict]:
 
     return APInames, metaKG, API_predicates
 
+
+def build_attribute_constraint(attribute_id, operator, value, name=None, is_not=False):
+    """
+    This creates an attribute constraint for a TRAPI query dict.
+
+    Example
+    -------
+    """
+    if name is None:
+        name = ''
+    output = {
+            'id': attribute_id,
+            'operator': operator,
+            'value': value,
+            'name': name
+            }
+    if is_not:
+        output['not'] = True
+    return output
+
+
+def format_query_json(subject_ids:list[str],
+        object_ids:list[str]|None = None,
+        subject_categories:list[str]|None = None,
+        object_categories:list[str]|None = None,
+        predicates:list[str]|None = None,
+        attribute_constraints:list[dict]|None = None,
+        ) -> dict:
+    '''
+    Formats a query dict, with optional constraints.
+
+    Example input:
+    subject_ids = ["NCBIGene:3845"]
+    object_ids = []
+    subject_categories = ["biolink:Gene"]
+    object_categories = ["biolink:Gene"]
+    predicates = ["biolink:positively_correlated_with", "biolink:physically_interacts_with"]
+    attribute_constraints = [build_attribute_constraint('biolink:has_total', '>', 2)]
+    '''
+    #edited Dec 5, 2023
+    query_json_temp = {
+        "message": {
+            "query_graph": {
+
+                "edges": {
+                    "e00": {
+                    #"e1": {
+                        "subject": "n00",
+                        "object": "n01",
+                        "predicates": predicates
+                        }
+                    },
+                "nodes": {
+                    "n00": {
+                        "ids":subject_ids, # required
+                        #"categories":[] # optional, if not provided, it will be empty
+                        },
+                    "n01": {
+                        #"ids":[],
+                        "categories":[] # required
+                        }}
+                }
+            },
+       
+        "submitter": "TCT"
+        }
+
+    if attribute_constraints is not None and len(attribute_constraints) > 0:
+        query_json_temp['message']['query_graph']['edges']['attribute_constraints'] = attribute_constraints
+
+    if subject_ids is not None and len(subject_ids) > 0:
+        query_json_temp["message"]["query_graph"]["nodes"]["n00"]["ids"] = subject_ids
+
+    if object_ids is not None and len(object_ids) > 0:
+        query_json_temp["message"]["query_graph"]["nodes"]["n01"]["ids"] = object_ids
+
+    if subject_categories is not None and len(subject_categories) > 0:
+        query_json_temp["message"]["query_graph"]["nodes"]["n00"]["categories"] = subject_categories
+
+    if object_categories is not None and len(object_categories) > 0:
+        query_json_temp["message"]["query_graph"]["nodes"]["n01"]["categories"] = object_categories
+
+    if predicates is not None and len(predicates) > 0:
+        query_json_temp["message"]["query_graph"]["edges"]["e00"]["predicates"] = predicates
+
+    return query_json_temp
+
+
+
 def optimize_query_json(query_json, API_name_cur, API_predicates):
     '''
     Optimize the query JSON by removing predicates that are not supported by the selected APIs.
@@ -83,7 +172,7 @@ def query_KP(API_name_cur, query_json, APInames, API_predicates):
     Query an individual API with a TRAPI 1.5.0 query JSON,
     without modifying the original query_json.
     """
-    API_url_cur = APInames[API_name_cur]
+    API_url_cur = APInames[API_name_cur].strip('/')
     # deep‐copy so we never touch the caller’s data
     query_copy = deepcopy(query_json)
     # optimize on our private copy

@@ -10,15 +10,23 @@ import requests
 from .translator_node import TranslatorNode
 
 
-URL = 'https://nodenorm.transltr.io/'
+URL = 'https://nodenorm.ci.transltr.io/'
+
+def status():
+    """
+    Returns the status of the Node Normalizer API.
+    """
+    response = requests.get(f'{URL}status')
+    response.raise_for_status()
+    return response.json()
 
 def get_normalized_nodes(query: str | list[str],
         return_equivalent_identifiers:bool=False,
         mode:str='get',
-        **kwargs):
+        **kwargs) -> dict[str, TranslatorNode]|TranslatorNode:
     """
     A wrapper around the `get_normalized_nodes` api endpoint. Given a CURIE or a list of CURIEs, this returns either a single TranslatorNode or a dict of CURIE ids to TranslatorNodes.
-    
+
     Parameters
     ----------
     query : str
@@ -41,42 +49,49 @@ def get_normalized_nodes(query: str | list[str],
     >>> get_normalized_nodes('MESH:D014867', return_equivalent_identifiers=False)
     TranslatorNode(curie='CHEBI:15377', label='Water', types=['biolink:SmallMolecule', 'biolink:MolecularEntity', 'biolink:ChemicalEntity', 'biolink:PhysicalEssence', 'biolink:ChemicalOrDrugOrTreatment', 'biolink:ChemicalEntityOrGeneOrGeneProduct', 'biolink:ChemicalEntityOrProteinOrPolypeptide', 'biolink:NamedThing', 'biolink:PhysicalEssenceOrOccurrent'], synonyms=None, curie_synonyms=None)
     """
-    path = urllib.parse.urljoin(URL, 'get_normalized_nodes')
     # default parameters: true for gene-protein conflation, false for drug-chemical conflation
+    path = urllib.parse.urljoin(URL, 'get_normalized_nodes')
+    # TODO: batch the query?
     if mode == 'post':
-        response = requests.post(path, json={'curies': query, **kwargs})
+        if isinstance(query, str):
+            # CURIEs sent to POST must be a list. If a single CURIE is given, we wrap it.
+            json_query = [query]
+        else:
+            json_query = query
+        if len(json_query) == 0:
+            return {}
+        response = requests.post(path, json={'curies': json_query, **kwargs})
     else:
         response = requests.get(path, params={'curie': query, **kwargs})
     if response.status_code == 200:
         result = response.json()
-        if len(result) == 0:
-            raise LookupError('No matches found for the given input: ' + str(query))
-        else:
-            normalized_dict = {}
-            for k, node in result.items():
-                if node is None:
-                    normalized_dict[k] = None
-                    continue
-                n = TranslatorNode(node['id']['identifier'])
-                if 'label' in node['id']:
-                    n.label = node['id']['label']
-                if 'type' in node:
-                    n.types = node['type']
-                if return_equivalent_identifiers and 'equivalent_identifiers' in node:
-                    synonyms = []
-                    curie_synonyms = []
-                    for eq in node['equivalent_identifiers']:
-                        if 'label' in eq:
-                            synonyms.append(eq['label'])
-                        else:
-                            synonyms.append(None)
-                        curie_synonyms.append(eq['identifier'])
-                    n.synonyms = synonyms
-                    n.curie_synonyms = curie_synonyms
-                normalized_dict[k] = n
-            if isinstance(query, str):
-                return normalized_dict[query]
-            return normalized_dict
+        normalized_dict = {}
+        for k, node in result.items():
+            if node is None:
+                # No match found for CURIE `k`.
+                normalized_dict[k] = None
+                continue
+
+            n = TranslatorNode(node['id']['identifier'])
+            if 'label' in node['id']:
+                n.label = node['id']['label']
+            if 'type' in node:
+                n.types = node['type']
+            if return_equivalent_identifiers and 'equivalent_identifiers' in node:
+                synonyms = []
+                curie_synonyms = []
+                for eq in node['equivalent_identifiers']:
+                    if 'label' in eq:
+                        synonyms.append(eq['label'])
+                    else:
+                        synonyms.append(None)
+                    curie_synonyms.append(eq['identifier'])
+                n.synonyms = synonyms
+                n.curie_synonyms = curie_synonyms
+            normalized_dict[k] = n
+        if isinstance(query, str):
+            return normalized_dict[query]
+        return normalized_dict
     else:
         raise requests.RequestException('Response from server had error, code ' + str(response.status_code))
 
@@ -103,6 +118,8 @@ def get_preferred_names(id_list:list[str], batch_limit=500, **kwargs) -> dict[st
     for index in range(0, len(id_list), batch_limit):
         id_sublist = id_list[index:index + batch_limit]
         normalized_nodes = get_normalized_nodes(id_sublist, mode='post', **kwargs)
+        if isinstance(normalized_nodes, TranslatorNode):
+            normalized_nodes = {normalized_nodes.curie: normalized_nodes}
         for curie in id_sublist:
             if curie not in normalized_nodes or normalized_nodes[curie] is None:
                 unmapped_ids.append(curie)

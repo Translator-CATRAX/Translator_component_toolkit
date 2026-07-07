@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "TCT"
-version = "0.1.6"
+version = "0.2.0"
 description = "Translator Component Toolkit"
 readme = "README.md"
 license = {text = "MIT"}
@@ -34,7 +34,10 @@ dependencies = [
     "fastmcp>=2.12.2",
     "click>=8.2.1",
     'networkx',
-    'pyvis'
+    'igraph',
+    'pyvis',
+    'zstandard',
+    'copy'
 ]
 
 [project.scripts]
@@ -45,8 +48,8 @@ Homepage = "https://github.com/NCATSTranslator/Translator_component_toolkit"
 Documentation = "https://ncatstranslator.github.io/Translator_component_toolkit/"
 Repository = "https://github.com/NCATSTranslator/Translator_component_toolkit"
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "ruff>=0.1.0",
