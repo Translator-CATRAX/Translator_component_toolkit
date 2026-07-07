@@ -75,8 +75,6 @@ Example notebook for **[PathFinder](https://github.com/NCATSTranslator/Translato
 #### Network finder
 Example notebook for **[NetworkFinder](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Neighborhood_finder_multiple_nodes.ipynb)**
 
-#### Network annotation
-Example notebook for **[NetworkAnnotator](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/Annotate_graph.ipynb)**
 
 ### Visulize the results
 After each pipleline, it will generate a result file for visualization. A user can use **[the Visualization html](https://github.com/NCATSTranslator/Translator_component_toolkit/blob/main/notebooks/visulize_path_finder_results.html)** file to visulaize the results.
