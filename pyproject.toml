@@ -37,6 +37,7 @@ dependencies = [
     'igraph',
     'pyvis',
     'zstandard',
+    'copy'
 ]
 
 [project.scripts]
