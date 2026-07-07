@@ -1,4 +1,4 @@
-TCT.TCT_neighborhood_finder
+TCT.TCT_network_annotator
 =================
 .. automodule:: TCT.TCT_network_annotator
    :members:
